@@ -1,0 +1,51 @@
+Creating a Docker FileSteps
+
+vim Dockerfile
+
+FROM ubuntu
+
+MAINTAINER srikanth <tsri010203@gmail.com>
+
+RUN apt-get update
+
+CMD ["echo", "Hell World...Its my First Docker Image"]
+
+ls
+
+docker build -t myimage:1.0 .
+
+docker image ls
+
+docker ps -a
+
+docker run <imageID>
+
+docker image ls
+
+docker ps -a
+
+Create a Docker Hub account to upload the image
+
+Login as 
+docker login -u kubesri
+password
+
+docker tag <image id> kubesri/eveningdockerimage
+docker push kubesri/8amdockerimage
+
+
+docker tag 82310cf6cd5c kubesri/friday12pmdockerimage
+
+1c5058e431b4
+
+
+docker tag b7eaf4026f17 kubesri/eightpmdockerimage
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+Creating a Docker Image as below
+
+Step 1: Create a Base Container
+
+The below Docker create command will create a new container for us from the command line:
+
+root@ip-172-31-86-231:~# docker create --name nginx_base -p 80:80 nginx:alpine
+Unable to find image 'nginx:alpine' locally
+alpine: Pulling from library/nginx
+7264a8db6415: Pull complete 
+518c62654cf0: Pull complete 
+d8c801465ddf: Pull complete 
+ac28ec6b1e86: Pull complete 
+eb8fb38efa48: Pull complete 
+e92e38a9a0eb: Pull complete 
+58663ac43ae7: Pull complete 
+2f545e207252: Pull complete 
+Digest: sha256:16164a43b5faec40adb521e98272edc528e74f31c1352719132b8f7e53418d70
+Status: Downloaded newer image for nginx:alpine
+27da2cfefcb09a3a386a23576f2655726d54179609db793d420d45b60167155e
+
+Step 2: Inspect Images
+
+root@ip-172-31-86-231:~# docker images -a
+REPOSITORY        TAG       IMAGE ID       CREATED         SIZE
+nginx             alpine    433dbc17191a   3 days ago      42.6MB
+nginx             latest    eea7b3dcba7e   2 weeks ago     187MB
+jenkins/jenkins   latest    541ec44c40ea   2 weeks ago     463MB
+tomee             latest    92b484918780   2 weeks ago     335MB
+mysql             5         92034fe9a41f   4 weeks ago     581MB
+sonarqube         latest    aea2e7f78453   5 weeks ago     702MB
+centos            latest    5d0da3dc9764   23 months ago   231MB
+
+Step 3: Inspect Containers
+root@ip-172-31-86-231:~# docker ps -a
+
+Step 4: Start the Container and check it the webbrowser with public URL and port number
+
+root@ip-172-31-86-231:~# docker start nginx_base
+nginx_base
+root@ip-172-31-86-231:~# ls
+docker-compose.yml  get-docker.sh  nginx-image  snap
+
+Step 5: Modify the Running Container
+
+Let’s create a new index.html file and copy it onto the running container. 
+Using an editor on your machine, create an index.html file in the 
+same directory that you have been running Docker commands from.
+
+Then paste the following HTML into it:
+
+<html>
+<head>
+<title>Hello World</title>
+</head>
+<body>
+<h1>Hello World!</h1>
+</body>
+
+root@ip-172-31-86-231:~# vi index.html
+
+Then save the file and return to the command line. We will use the docker cp command to 
+copy this file onto the running container.
+
+root@ip-172-31-86-231:~# docker cp index.html nginx_base:/usr/share/nginx/html/index.html
+Successfully copied 2.05kB to nginx_base:/usr/share/nginx/html/index.html
+
+Step 6: Create an Image From a Container
+
+root@ip-172-31-86-231:~# docker commit nginx_base
+sha256:0705d814ec80b5fd75f8315fbdd38c0f0dd1467b5ec71ba3dac8dcf2406c48f8
+
+
+root@ip-172-31-86-231:~# docker images -a
+REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
+<none>            <none>    0705d814ec80   55 seconds ago   42.6MB
+nginx             alpine    433dbc17191a   3 days ago       42.6MB
+nginx             latest    eea7b3dcba7e   2 weeks ago      187MB
+jenkins/jenkins   latest    541ec44c40ea   2 weeks ago      463MB
+tomee             latest    92b484918780   2 weeks ago      335MB
+mysql             5         92034fe9a41f   4 weeks ago      581MB
+sonarqube         latest    aea2e7f78453   5 weeks ago      702MB
+centos            latest    5d0da3dc9764   23 months ago    231MB
+
+Step 7: Tag the Image
+
+root@ip-172-31-86-231:~# docker tag 9b7fa691d4e5 hello_world_nginx
+root@ip-172-31-86-231:~# docker images -a
+REPOSITORY          TAG       IMAGE ID       CREATED              SIZE
+hello_world_nginx   latest    0705d814ec80   About a minute ago   42.6MB
+nginx               alpine    433dbc17191a   3 days ago           42.6MB
+nginx               latest    eea7b3dcba7e   2 weeks ago          187MB
+jenkins/jenkins     latest    541ec44c40ea   2 weeks ago          463MB
+tomee               latest    92b484918780   2 weeks ago          335MB
+mysql               5         92034fe9a41f   4 weeks ago          581MB
+sonarqube           latest    aea2e7f78453   5 weeks ago          702MB
+centos              latest    5d0da3dc9764   23 months ago        231MB
+
+Step 8: Create Images With Tags
+
+root@ip-172-31-86-231:~# docker commit nginx_base hello_world_nginx
+sha256:1d740e79e77dfc465646d9516d349a58db9bf4d158c2d5e193f71a4f2e8c4292
+
+Step 9: Delete the Original Container
+
+root@ip-172-31-86-231:~# docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                               NAMES
+27da2cfefcb0   nginx:alpine   "/docker-entrypoint.…"   6 minutes ago   Up 4 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp   nginx_base
+
+
+root@ip-172-31-86-231:~# docker stop nginx_base
+nginx_base
+
+
+root@ip-172-31-86-231:~# docker rm nginx_base
+nginx_base
+
+root@ip-172-31-86-231:~# docker ps -a
+CONTAINER ID   IMAGE              COMMAND                  CREATED       STATUS                     PORTS     NAMES
+cab1e19dd385   jenkins/jenkins    "/usr/bin/tini -- /u…"   2 weeks ago   Exited (143) 2 weeks ago             root_devserver_1
+afb862c162a3   sonarqube:latest   "/opt/sonarqube/dock…"   3 weeks ago   Exited (130) 3 weeks ago             sonar
+
+Now, let’s create a new container based on the image we just created and start it.
+
+root@ip-172-31-86-231:~# docker run --name hello_world -d -p 80:80 hello_world_nginx
+304e17835a6d371b14e43672c063b3a6e190dfd4e9f6c64a9814e09d971fbb6f
+
+root@ip-172-31-86-231:~# docker ps -a
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS                     PORTS                               NAMES
+304e17835a6d   hello_world_nginx   "/docker-entrypoint.…"   13 seconds ago   Up 13 seconds              0.0.0.0:80->80/tcp, :::80->80/tcp   hello_world
+cab1e19dd385   jenkins/jenkins     "/usr/bin/tini -- /u…"   2 weeks ago      Exited (143) 2 weeks ago                                       root_devserver_1
+afb862c162a3   sonarqube:latest    "/opt/sonarqube/dock…"   3 weeks ago      Exited (130) 3 weeks ago                                       sonar
+root@ip-172-31-86-231:~# 
+
+Now copy the public IP and paste in browser and we see the same nginx open ups as like previous original container
